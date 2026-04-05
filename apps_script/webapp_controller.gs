@@ -96,6 +96,16 @@ function uiGetSession(sessionToken) {
   return { ok: true, user: session };
 }
 
+function uiGetIntegrationConfig(sessionToken) {
+  APP.Auth.requireRole(sessionToken, ['admin']);
+  return APP.IntegrationConfig.getViewModel();
+}
+
+function uiSaveIntegrationConfig(input, sessionToken) {
+  APP.Auth.requireRole(sessionToken, ['admin']);
+  return APP.IntegrationConfig.saveFromInput(input || {});
+}
+
 APP.WebApi = {
   assertApiKey: function (inputKey) {
     var key = APP.getAppConfig().webhookApiKey;

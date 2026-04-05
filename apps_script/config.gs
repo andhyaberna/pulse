@@ -31,6 +31,8 @@ APP.REPORT_FUNCTION_MAP = {
   META_CREATIVE_FATIGUE: 'runReportCreativeFatigue'
 };
 
+APP.CONFIG_TARGET_PREFIX = 'CFG_DEFAULT_';
+
 APP.Util = {
   nowIso: function () {
     return new Date().toISOString();

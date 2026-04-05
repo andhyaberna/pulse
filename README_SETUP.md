@@ -10,6 +10,7 @@ meta_ads_internal_app/
     config.gs
     sheet_repository.gs
     auth_service.gs
+    integration_config_service.gs
     telegram_service.gs
     meta_service.gs
     dispatcher.gs
@@ -86,11 +87,12 @@ Di Apps Script: `Project Settings -> Script properties`.
 Tambahkan:
 
 - `TARGET_SHEET_ID` = `1OOOWLiu9ZkyxRCFVqkHdfdk4-RFF4UlncNGn5COg5dQ`
-- `META_ACCESS_TOKEN` = token Meta (secret)
-- `META_AD_ACCOUNT_ID` = contoh `act_123456789`
-- `TELEGRAM_BOT_TOKEN` = token bot Telegram (secret)
 - `WEBHOOK_API_KEY` = shared key untuk Worker -> GAS
 - `AUTH_PEPPER` = random string panjang untuk hash password
+
+Catatan:
+
+- `META_ACCESS_TOKEN`, `META_AD_ACCOUNT_ID`, `TELEGRAM_BOT_TOKEN`, dan `CHAT_IDS` sekarang bisa dikelola dari menu konfigurasi dashboard (admin), jadi tidak wajib set manual di awal.
 
 Opsional:
 
@@ -262,7 +264,24 @@ npm run deploy
 - Jika ter-split, pesan akan diberi prefix `Part x/y`.
 - Implementasi ada di `apps_script/telegram_service.gs` (`splitMessage` + `broadcastReport`).
 
-## 11) Auth (admin/user)
+## 11) Menu Konfigurasi Dashboard
+
+Admin bisa mengelola parameter integrasi tanpa edit source code:
+
+- `ACCESS_TOKEN`
+- `AD_ACCOUNT_ID`
+- `BOT_TOKEN_TELEGRAM`
+- `CHAT_IDS` (koma/baris baru)
+
+Mekanisme:
+
+- Backend: `apps_script/integration_config_service.gs`
+- UI: `apps_script/dashboard.html`
+- Simpan ke Script Properties (token, account id) + sinkron chat id ke sheet `telegram_targets` dengan `target_id` prefix `CFG_DEFAULT_`.
+- Token sensitif ditampilkan sebagai masked value.
+- Input tervalidasi (format account id, format bot token, format chat ids).
+
+## 12) Auth (admin/user)
 
 Fitur yang tersedia:
 
@@ -293,7 +312,7 @@ Akun default hasil seeder:
 
 Catatan: ganti password dummy setelah test awal.
 
-## 12) Penanganan error yang sudah dibuat
+## 13) Penanganan error yang sudah dibuat
 
 - Validasi Script Properties wajib (`APP.assertRequiredSecrets`).
 - Validasi `api_key` untuk endpoint `doPost`.
@@ -301,7 +320,7 @@ Catatan: ganti password dummy setelah test awal.
 - Queue manual punya status `PENDING/PROCESSING/DONE/FAILED`.
 - Exception API Meta/Telegram dibaca jelas di log.
 
-## 13) Catatan adaptasi dari script lama Anda
+## 14) Catatan adaptasi dari script lama Anda
 
 Laporan existing Anda dipetakan langsung ke 7 report modular di atas.
 Jika ingin logika lama dipertahankan 100%, salin rules khusus lama ke file report yang sesuai:

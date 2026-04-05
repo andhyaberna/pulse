@@ -19,9 +19,11 @@
       .fail { color: #b91c1c; }
       .row { display: flex; gap: 8px; flex-wrap: wrap; }
       .field { display: flex; flex-direction: column; margin-bottom: 8px; }
-      input, select { padding: 8px; border: 1px solid #d1d9e6; border-radius: 6px; min-width: 220px; }
+      input, select, textarea { padding: 8px; border: 1px solid #d1d9e6; border-radius: 6px; min-width: 220px; }
+      textarea { min-height: 90px; resize: vertical; }
       .hidden { display: none; }
       .tag { display: inline-block; padding: 2px 8px; border-radius: 99px; background: #eef4ff; color: #1d4ed8; font-size: 12px; }
+      .helper { font-size: 12px; color: #64748b; margin-top: 4px; }
     </style>
   </head>
   <body>
@@ -79,6 +81,52 @@
       </table>
     </div>
 
+    <div class="card hidden" id="configCard">
+      <h3 style="margin-top:0;">Menu Konfigurasi Integrasi</h3>
+      <div class="muted" style="margin-bottom:8px;">Field sensitif disamarkan. Kosongkan token jika tidak ingin mengganti nilainya.</div>
+
+      <div class="row">
+        <div style="flex:1; min-width:280px;">
+          <div class="field">
+            <label>ACCESS_TOKEN (Meta)</label>
+            <input id="cfgAccessToken" type="password" placeholder="" />
+            <div class="helper" id="cfgAccessTokenHint">Belum diset</div>
+          </div>
+        </div>
+
+        <div style="flex:1; min-width:280px;">
+          <div class="field">
+            <label>AD_ACCOUNT_ID</label>
+            <input id="cfgAdAccountId" type="text" placeholder="act_123456789" />
+            <div class="helper">Contoh: act_123456789 (angka otomatis diprefix act_)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="flex:1; min-width:280px;">
+          <div class="field">
+            <label>BOT_TOKEN_TELEGRAM</label>
+            <input id="cfgBotToken" type="password" placeholder="" />
+            <div class="helper" id="cfgBotTokenHint">Belum diset</div>
+          </div>
+        </div>
+
+        <div style="flex:1; min-width:280px;">
+          <div class="field">
+            <label>CHAT_IDS</label>
+            <textarea id="cfgChatIds" placeholder="-100123..., -100456..."></textarea>
+            <div class="helper">Pisahkan dengan koma atau baris baru</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <button type="button" onclick="loadIntegrationConfig()">Muat Konfigurasi</button>
+        <button type="button" class="secondary" onclick="saveIntegrationConfig()">Simpan Konfigurasi</button>
+      </div>
+    </div>
+
     <div class="card">
       <b>Log</b>
       <pre id="log">Siap.</pre>
@@ -98,6 +146,7 @@
         document.getElementById('authCard').classList.toggle('hidden', loggedIn);
         document.getElementById('appCard').classList.toggle('hidden', !loggedIn);
         document.getElementById('tableCard').classList.toggle('hidden', !loggedIn);
+        document.getElementById('configCard').classList.toggle('hidden', !loggedIn || !canRun());
       }
 
       function saveToken(token) {
@@ -169,6 +218,9 @@
             renderUser();
             setLog('Login sukses sebagai ' + res.user.role);
             refreshData();
+            if (canRun()) {
+              loadIntegrationConfig();
+            }
           })
           .withFailureHandler(function (err) {
             setLog('Login gagal: ' + err.message);
@@ -201,6 +253,48 @@
             setLog('Gagal refresh: ' + err.message);
           })
           .uiGetReportRows(state.token);
+      }
+
+      function loadIntegrationConfig() {
+        if (!canRun()) return;
+        setLog('Memuat konfigurasi integrasi...');
+        google.script.run
+          .withSuccessHandler(function (cfg) {
+            document.getElementById('cfgAccessToken').value = '';
+            document.getElementById('cfgAdAccountId').value = cfg.ad_account_id || '';
+            document.getElementById('cfgBotToken').value = '';
+            document.getElementById('cfgChatIds').value = cfg.chat_ids_text || '';
+
+            document.getElementById('cfgAccessTokenHint').textContent = cfg.meta_access_token_set ? ('Tersimpan: ' + cfg.meta_access_token_masked) : 'Belum diset';
+            document.getElementById('cfgBotTokenHint').textContent = cfg.telegram_bot_token_set ? ('Tersimpan: ' + cfg.telegram_bot_token_masked) : 'Belum diset';
+            setLog('Konfigurasi berhasil dimuat.');
+          })
+          .withFailureHandler(function (err) {
+            setLog('Gagal load konfigurasi: ' + err.message);
+          })
+          .uiGetIntegrationConfig(state.token);
+      }
+
+      function saveIntegrationConfig() {
+        if (!canRun()) return;
+
+        var payload = {
+          access_token: document.getElementById('cfgAccessToken').value,
+          ad_account_id: document.getElementById('cfgAdAccountId').value,
+          bot_token_telegram: document.getElementById('cfgBotToken').value,
+          chat_ids_text: document.getElementById('cfgChatIds').value
+        };
+
+        setLog('Menyimpan konfigurasi...');
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLog('Konfigurasi tersimpan: ' + JSON.stringify(res, null, 2));
+            loadIntegrationConfig();
+          })
+          .withFailureHandler(function (err) {
+            setLog('Gagal simpan konfigurasi: ' + err.message);
+          })
+          .uiSaveIntegrationConfig(payload, state.token);
       }
 
       function manualRun(reportId) {
@@ -248,6 +342,9 @@
             setAuthView(true);
             renderUser();
             refreshData();
+            if (canRun()) {
+              loadIntegrationConfig();
+            }
           })
           .withFailureHandler(function () {
             saveToken('');
