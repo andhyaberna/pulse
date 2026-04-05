@@ -1,0 +1,7 @@
+# Apps Script local artifacts
+apps_script/node_modules/
+apps_script/.clasp.json
+
+# Cloudflare Worker local artifacts
+cloudflare_worker/node_modules/
+cloudflare_worker/.wrangler/
