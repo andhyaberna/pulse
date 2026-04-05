@@ -5,7 +5,7 @@ function doGet(e) {
   if (params.api === 'status') {
     return APP.Util.jsonResponse({
       ok: true,
-      app: 'meta-ads-telegram',
+      app: 'meta-pulse',
       version: APP.VERSION,
       now: APP.Util.nowIso()
     }, 200);
@@ -13,7 +13,7 @@ function doGet(e) {
 
   var template = HtmlService.createTemplateFromFile('dashboard');
   template.version = APP.VERSION;
-  return template.evaluate().setTitle('Meta Ads Report Runner');
+  return template.evaluate().setTitle('Meta Pulse - Bot Telegram Cerdas yang memantau performa iklan Meta (Facebook & Instagram) secara otomatis.');
 }
 
 function doPost(e) {
