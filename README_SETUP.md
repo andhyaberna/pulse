@@ -152,7 +152,7 @@ Setting deploy Worker yang sudah dipakai di project ini:
 
 - Worker name: `pulse`
 - Allowed domain: `pulse.cepat.top`
-- Route custom domain: `pulse.cepat.top/*`
+- Custom domain pattern: `pulse.cepat.top`
 
 Endpoint:
 
@@ -204,6 +204,11 @@ Deploy:
 ```bash
 npm run deploy
 ```
+
+Catatan penting:
+
+- Deploy ini harus dijalankan dari folder `cloudflare_worker`, bukan dari root repo.
+- Jangan deploy sebagai Cloudflare Pages, karena project ini adalah Worker murni dan tidak punya folder static assets.
 
 ### Hindari error submodule saat deploy
 

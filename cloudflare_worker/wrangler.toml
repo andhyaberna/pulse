@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-04-05"
 
 routes = [
-  { pattern = "pulse.cepat.top/*", custom_domain = true }
+  { pattern = "pulse.cepat.top", custom_domain = true }
 ]
 
 [observability]
