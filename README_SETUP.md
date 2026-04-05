@@ -273,6 +273,11 @@ Admin bisa mengelola parameter integrasi tanpa edit source code:
 - `BOT_TOKEN_TELEGRAM`
 - `CHAT_IDS` (koma/baris baru)
 
+Tersedia tombol verifikasi langsung di dashboard (admin):
+
+- `Test Koneksi Meta` untuk cek akses API akun Meta
+- `Test Kirim Telegram` untuk kirim pesan uji ke chat default
+
 Mekanisme:
 
 - Backend: `apps_script/integration_config_service.gs`

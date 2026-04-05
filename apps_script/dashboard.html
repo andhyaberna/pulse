@@ -124,6 +124,8 @@
       <div class="row">
         <button type="button" onclick="loadIntegrationConfig()">Muat Konfigurasi</button>
         <button type="button" class="secondary" onclick="saveIntegrationConfig()">Simpan Konfigurasi</button>
+        <button type="button" onclick="testMetaConnection()">Test Koneksi Meta</button>
+        <button type="button" class="secondary" onclick="testTelegramSend()">Test Kirim Telegram</button>
       </div>
     </div>
 
@@ -295,6 +297,32 @@
             setLog('Gagal simpan konfigurasi: ' + err.message);
           })
           .uiSaveIntegrationConfig(payload, state.token);
+      }
+
+      function testMetaConnection() {
+        if (!canRun()) return;
+        setLog('Testing koneksi Meta...');
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLog('Test Meta sukses: ' + JSON.stringify(res, null, 2));
+          })
+          .withFailureHandler(function (err) {
+            setLog('Test Meta gagal: ' + err.message);
+          })
+          .uiTestMetaConnection(state.token);
+      }
+
+      function testTelegramSend() {
+        if (!canRun()) return;
+        setLog('Testing kirim Telegram...');
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLog('Test Telegram sukses: ' + JSON.stringify(res, null, 2));
+          })
+          .withFailureHandler(function (err) {
+            setLog('Test Telegram gagal: ' + err.message);
+          })
+          .uiTestTelegramSend(state.token);
       }
 
       function manualRun(reportId) {

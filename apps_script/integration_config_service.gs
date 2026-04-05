@@ -149,5 +149,53 @@ APP.IntegrationConfig = {
         bot_token_updated: !!newBotToken
       }
     };
+  },
+
+  testMetaConnection: function () {
+    var cfg = APP.getAppConfig();
+    if (!cfg.metaAccessToken) {
+      throw new Error('META_ACCESS_TOKEN belum diisi');
+    }
+    if (!cfg.metaAdAccountId) {
+      throw new Error('META_AD_ACCOUNT_ID belum diisi');
+    }
+
+    var info = APP.MetaService.getAdAccountInfo();
+    return {
+      ok: true,
+      message: 'Koneksi Meta berhasil',
+      account: info
+    };
+  },
+
+  testTelegramSend: function () {
+    var cfg = APP.getAppConfig();
+    if (!cfg.telegramBotToken) {
+      throw new Error('TELEGRAM_BOT_TOKEN belum diisi');
+    }
+
+    var chatIds = APP.IntegrationConfig.getDefaultChatIds();
+    if (!chatIds.length) {
+      throw new Error('CHAT_IDS default belum tersedia di telegram_targets');
+    }
+
+    var msg =
+      '✅ *Test Kirim Telegram Berhasil*\n' +
+      '🕒 ' + APP.Util.formatWIB(new Date()) + '\n' +
+      '📌 Source: Dashboard Integration Config';
+
+    var sent = 0;
+    chatIds.forEach(function (chatId) {
+      APP.TelegramService.sendMessage(chatId, msg);
+      sent += 1;
+      Utilities.sleep(120);
+    });
+
+    return {
+      ok: true,
+      message: 'Test Telegram berhasil',
+      sent_count: sent,
+      chat_ids: chatIds
+    };
   }
 };

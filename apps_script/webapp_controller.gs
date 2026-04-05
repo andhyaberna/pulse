@@ -106,6 +106,16 @@ function uiSaveIntegrationConfig(input, sessionToken) {
   return APP.IntegrationConfig.saveFromInput(input || {});
 }
 
+function uiTestMetaConnection(sessionToken) {
+  APP.Auth.requireRole(sessionToken, ['admin']);
+  return APP.IntegrationConfig.testMetaConnection();
+}
+
+function uiTestTelegramSend(sessionToken) {
+  APP.Auth.requireRole(sessionToken, ['admin']);
+  return APP.IntegrationConfig.testTelegramSend();
+}
+
 APP.WebApi = {
   assertApiKey: function (inputKey) {
     var key = APP.getAppConfig().webhookApiKey;
