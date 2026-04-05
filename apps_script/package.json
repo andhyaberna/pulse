@@ -1,0 +1,19 @@
+{
+  "name": "pulse-apps-script",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local clasp workflow for the Pulse Google Apps Script project",
+  "scripts": {
+    "clasp:login": "clasp login",
+    "clasp:login:no-localhost": "clasp login --no-localhost",
+    "clasp:create:bound": "clasp create-script --title \"Pulse Apps Script\" --parentId \"1OOOWLiu9ZkyxRCFVqkHdfdk4-RFF4UlncNGn5COg5dQ\" --rootDir ./",
+    "clasp:create:standalone": "clasp create-script --type standalone --title \"Pulse Apps Script\" --rootDir ./",
+    "clasp:push": "clasp push",
+    "clasp:pull": "clasp pull",
+    "clasp:status": "clasp show-file-status",
+    "clasp:open": "clasp open-script"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.0.6"
+  }
+}

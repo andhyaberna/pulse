@@ -80,6 +80,55 @@ Implementasi mapping ada di `apps_script/config.gs` pada `APP.REPORT_FUNCTION_MA
    - Execute as: `Me`
    - Who has access: sesuai kebutuhan internal (umumnya `Anyone with link` jika dipanggil Worker)
 
+Alternatif yang lebih praktis: pakai `clasp` agar semua file `.gs` dan `dashboard.html` bisa di-push langsung dari folder lokal tanpa buat file satu per satu di editor Apps Script.
+
+Perintah dari folder `apps_script/`:
+
+```bash
+npm install
+npm run clasp:login
+```
+
+Aktifkan dulu Apps Script API di:
+
+- `https://script.google.com/home/usersettings`
+
+Lalu pilih salah satu:
+
+```bash
+npm run clasp:create:bound
+```
+
+- Dipakai jika ingin project Apps Script langsung terikat ke Google Sheet `1OOOWLiu9ZkyxRCFVqkHdfdk4-RFF4UlncNGn5COg5dQ`.
+
+Atau:
+
+```bash
+npm run clasp:create:standalone
+```
+
+- Dipakai jika ingin project Apps Script standalone.
+
+Setelah `.clasp.json` terbentuk, sync file lokal ke Apps Script dengan:
+
+```bash
+npm run clasp:push
+```
+
+Command tambahan yang berguna:
+
+```bash
+npm run clasp:pull
+npm run clasp:status
+npm run clasp:open
+```
+
+Catatan:
+
+- File `appsscript.json` sudah disiapkan di folder `apps_script/`.
+- File `.clasp.json` akan dibuat otomatis oleh `clasp` dan sengaja tidak di-commit karena berisi `scriptId` spesifik project Anda.
+- Untuk deploy Web App pertama kali, paling mudah tetap lewat UI Apps Script setelah source code ter-push.
+
 ### C. Set Script Properties (wajib)
 
 Di Apps Script: `Project Settings -> Script properties`.
