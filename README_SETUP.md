@@ -379,7 +379,21 @@ Catatan: ganti password dummy setelah test awal.
 - Queue manual punya status `PENDING/PROCESSING/DONE/FAILED`.
 - Exception API Meta/Telegram dibaca jelas di log.
 
-## 14) Catatan adaptasi dari script lama Anda
+## 14) Workspace Hygiene & Context Guardrails
+
+- Context pressure di sini bersifat aproksimasi dan repo-scoped, jadi yang dijaga adalah ukuran konteks aktif di `meta_ads_internal_app`, bukan token model yang presisi.
+- Root `.gitignore` dipakai untuk menahan artefak lokal/generatif seperti dependency install, state clasp, dan cache worker agar hot context tetap bersih.
+- Gunakan watchdog secara read-only untuk melihat ringkasan scope aktif sebelum cleanup apa pun.
+- Kalau memang perlu membersihkan artefak generatif, jalankan watchdog dengan mode cleanup yang opt-in dan hanya target path yang jelas-jelas generated.
+
+Contoh:
+
+```powershell
+powershell -File .\scripts\context-watchdog.ps1
+powershell -File .\scripts\context-watchdog.ps1 -Cleanup
+```
+
+## 15) Catatan adaptasi dari script lama Anda
 
 Laporan existing Anda dipetakan langsung ke 7 report modular di atas.
 Jika ingin logika lama dipertahankan 100%, salin rules khusus lama ke file report yang sesuai:
