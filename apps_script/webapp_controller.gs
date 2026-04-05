@@ -42,7 +42,8 @@ function doPost(e) {
   }
 }
 
-function uiGetReportRows() {
+function uiGetReportRows(sessionToken) {
+  APP.Auth.requireRole(sessionToken, ['admin', 'user']);
   var reports = APP.SheetRepository.getRowsAsObjects(APP.SHEETS.APP_REPORTS);
   var lastRunMap = APP.SheetRepository.getLastRunStatusMap();
 
@@ -63,13 +64,36 @@ function uiGetReportRows() {
   });
 }
 
-function uiRunReport(reportId) {
+function uiRunReport(reportId, sessionToken) {
+  APP.Auth.requireRole(sessionToken, ['admin']);
   return APP.Dispatcher.runSingleReport(reportId, { source: 'manual_ui' });
 }
 
-function uiQueueReport(reportId, note) {
-  var queueId = APP.SheetRepository.enqueueManualRun(reportId, 'manual_ui', note || '');
+function uiQueueReport(reportId, note, sessionToken) {
+  var session = APP.Auth.requireRole(sessionToken, ['admin']);
+  var queueId = APP.SheetRepository.enqueueManualRun(reportId, session.email || 'manual_ui', note || '');
   return { ok: true, queue_id: queueId };
+}
+
+function uiRegister(input) {
+  return APP.Auth.register(input || {});
+}
+
+function uiLogin(input) {
+  return APP.Auth.login(input || {});
+}
+
+function uiLogout(sessionToken) {
+  APP.Auth.clearSession(sessionToken);
+  return { ok: true, message: 'Logout berhasil' };
+}
+
+function uiGetSession(sessionToken) {
+  var session = APP.Auth.getSession(sessionToken);
+  if (!session) {
+    return { ok: false, user: null };
+  }
+  return { ok: true, user: session };
 }
 
 APP.WebApi = {

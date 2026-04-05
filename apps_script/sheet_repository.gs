@@ -17,6 +17,30 @@ APP.SheetRepository = {
     return sheet;
   },
 
+  ensureSheetWithHeaders: function (sheetName, headers) {
+    var ss = APP.SheetRepository.getSpreadsheet();
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+    }
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(headers);
+      return sheet;
+    }
+
+    var firstRow = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
+    var mismatch = headers.some(function (h, idx) {
+      return String(firstRow[idx] || '').trim() !== String(h || '').trim();
+    });
+
+    if (mismatch) {
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    }
+
+    return sheet;
+  },
+
   getRowsAsObjects: function (sheetName) {
     var sheet = APP.SheetRepository.getSheetOrThrow(sheetName);
     var values = sheet.getDataRange().getValues();
@@ -131,5 +155,46 @@ APP.SheetRepository = {
       };
     });
     return map;
+  },
+
+  getUserByEmail: function (email) {
+    var target = String(email || '').toLowerCase().trim();
+    if (!target) return null;
+
+    var rows = APP.SheetRepository.getRowsAsObjects(APP.SHEETS.APP_USERS);
+    return rows.find(function (r) {
+      return String(r.email || '').toLowerCase().trim() === target;
+    }) || null;
+  },
+
+  appendUser: function (user) {
+    var sheet = APP.SheetRepository.getSheetOrThrow(APP.SHEETS.APP_USERS);
+    sheet.appendRow([
+      user.user_id,
+      user.email,
+      user.name,
+      user.password_hash,
+      user.password_salt,
+      user.role,
+      user.is_active,
+      user.created_at,
+      user.updated_at,
+      user.last_login_at || ''
+    ]);
+  },
+
+  updateUserLastLogin: function (rowNumber, timestampIso) {
+    var sheet = APP.SheetRepository.getSheetOrThrow(APP.SHEETS.APP_USERS);
+    sheet.getRange(rowNumber, 10).setValue(timestampIso);
+    sheet.getRange(rowNumber, 9).setValue(timestampIso);
+  },
+
+  updateUserRoleByEmail: function (email, role) {
+    var user = APP.SheetRepository.getUserByEmail(email);
+    if (!user) return false;
+    var sheet = APP.SheetRepository.getSheetOrThrow(APP.SHEETS.APP_USERS);
+    sheet.getRange(user._rowNumber, 6).setValue(role);
+    sheet.getRange(user._rowNumber, 9).setValue(APP.Util.nowIso());
+    return true;
   }
 };

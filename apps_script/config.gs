@@ -7,7 +7,8 @@ APP.SHEETS = {
   REPORT_THRESHOLDS: 'report_thresholds',
   TELEGRAM_TARGETS: 'telegram_targets',
   RUN_LOGS: 'run_logs',
-  MANUAL_RUN_QUEUE: 'manual_run_queue'
+  MANUAL_RUN_QUEUE: 'manual_run_queue',
+  APP_USERS: 'app_users'
 };
 
 APP.REPORT_IDS = {
@@ -113,7 +114,10 @@ APP.getAppConfig = function () {
     timezone: p.getProperty('APP_TIMEZONE') || 'Asia/Jakarta',
     defaultDatePreset: p.getProperty('META_DATE_PRESET') || 'today',
     webhookApiKey: p.getProperty('WEBHOOK_API_KEY') || '',
-    internalUiKey: p.getProperty('INTERNAL_UI_KEY') || ''
+    internalUiKey: p.getProperty('INTERNAL_UI_KEY') || '',
+    authPepper: p.getProperty('AUTH_PEPPER') || '',
+    authSessionTtlSec: APP.Util.num(p.getProperty('AUTH_SESSION_TTL_SEC') || 21600),
+    allowAdminRegister: APP.Util.bool(p.getProperty('ALLOW_ADMIN_REGISTER') || false)
   };
 };
 

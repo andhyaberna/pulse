@@ -9,6 +9,7 @@ meta_ads_internal_app/
   apps_script/
     config.gs
     sheet_repository.gs
+    auth_service.gs
     telegram_service.gs
     meta_service.gs
     dispatcher.gs
@@ -29,6 +30,7 @@ meta_ads_internal_app/
     meta_ads_report_template.xlsx
     csv/
       app_reports.csv
+      app_users.csv
       report_thresholds.csv
       telegram_targets.csv
       run_logs.csv
@@ -88,11 +90,14 @@ Tambahkan:
 - `META_AD_ACCOUNT_ID` = contoh `act_123456789`
 - `TELEGRAM_BOT_TOKEN` = token bot Telegram (secret)
 - `WEBHOOK_API_KEY` = shared key untuk Worker -> GAS
+- `AUTH_PEPPER` = random string panjang untuk hash password
 
 Opsional:
 
 - `APP_TIMEZONE` = `Asia/Jakarta`
 - `META_DATE_PRESET` = `today`
+- `AUTH_SESSION_TTL_SEC` = default `21600` (6 jam)
+- `ALLOW_ADMIN_REGISTER` = `false` (disarankan). Set `true` jika ingin register admin langsung.
 
 ## 5) Import file Excel ke Google Sheets
 
@@ -257,7 +262,38 @@ npm run deploy
 - Jika ter-split, pesan akan diberi prefix `Part x/y`.
 - Implementasi ada di `apps_script/telegram_service.gs` (`splitMessage` + `broadcastReport`).
 
-## 11) Penanganan error yang sudah dibuat
+## 11) Auth (admin/user)
+
+Fitur yang tersedia:
+
+- register akun baru
+- login untuk admin dan user
+- role-based access:
+  - `admin`: bisa `Run Now` dan `Queue`
+  - `user`: read-only dashboard
+
+Data user disimpan di sheet `app_users` (auto-create saat register/login/seeder pertama).
+
+Kolom `app_users`:
+
+- `user_id,email,name,password_hash,password_salt,role,is_active,created_at,updated_at,last_login_at`
+
+Seeder akun dummy:
+
+- Jalankan function Apps Script: `seedAuthDummyUsers()`
+
+Akun default hasil seeder:
+
+- Admin:
+  - `admin@pulse.local` / `Admin12345!`
+  - `ops.admin@pulse.local` / `Admin12345!`
+- User:
+  - `user.marketing@pulse.local` / `User12345!`
+  - `user.analyst@pulse.local` / `User12345!`
+
+Catatan: ganti password dummy setelah test awal.
+
+## 12) Penanganan error yang sudah dibuat
 
 - Validasi Script Properties wajib (`APP.assertRequiredSecrets`).
 - Validasi `api_key` untuk endpoint `doPost`.
@@ -265,7 +301,7 @@ npm run deploy
 - Queue manual punya status `PENDING/PROCESSING/DONE/FAILED`.
 - Exception API Meta/Telegram dibaca jelas di log.
 
-## 12) Catatan adaptasi dari script lama Anda
+## 13) Catatan adaptasi dari script lama Anda
 
 Laporan existing Anda dipetakan langsung ke 7 report modular di atas.
 Jika ingin logika lama dipertahankan 100%, salin rules khusus lama ke file report yang sesuai:

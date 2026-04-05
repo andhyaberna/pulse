@@ -13,21 +13,57 @@
       th { background: #f0f4fa; }
       button { border: 1px solid #2b6cb0; background: #2b6cb0; color: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
       button.secondary { background: #fff; color: #2b6cb0; }
+      button[disabled] { opacity: .5; cursor: not-allowed; }
       .muted { color: #6b7280; font-size: 12px; }
       .ok { color: #0f766e; }
       .fail { color: #b91c1c; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; }
+      .field { display: flex; flex-direction: column; margin-bottom: 8px; }
+      input, select { padding: 8px; border: 1px solid #d1d9e6; border-radius: 6px; min-width: 220px; }
+      .hidden { display: none; }
+      .tag { display: inline-block; padding: 2px 8px; border-radius: 99px; background: #eef4ff; color: #1d4ed8; font-size: 12px; }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h2>Meta Ads Internal Runner</h2>
-      <div class="muted">Version: 1.0.0</div>
-      <div style="margin-top: 10px;">
-        <button type="button" onclick="refreshData()">Refresh</button>
+    <div class="card" id="authCard">
+      <h2>Login / Register</h2>
+      <div class="row">
+        <div style="flex:1; min-width:260px;">
+          <h4>Login</h4>
+          <div class="field"><label>Email</label><input id="loginEmail" type="email" /></div>
+          <div class="field"><label>Password</label><input id="loginPassword" type="password" /></div>
+          <button type="button" onclick="login()">Login</button>
+        </div>
+        <div style="flex:1; min-width:260px;">
+          <h4>Register</h4>
+          <div class="field"><label>Nama</label><input id="regName" type="text" /></div>
+          <div class="field"><label>Email</label><input id="regEmail" type="email" /></div>
+          <div class="field"><label>Password</label><input id="regPassword" type="password" /></div>
+          <div class="field"><label>Role</label>
+            <select id="regRole">
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+          <button type="button" class="secondary" onclick="registerUser()">Register</button>
+        </div>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card hidden" id="appCard">
+      <h2>Meta Ads Internal Runner</h2>
+      <div class="muted">Version: 1.0.0</div>
+      <div style="margin-top: 8px;">
+        User: <b id="who">-</b>
+        <span class="tag" id="roleTag">-</span>
+      </div>
+      <div style="margin-top: 10px;" class="row">
+        <button type="button" onclick="refreshData()">Refresh</button>
+        <button type="button" class="secondary" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="tableCard">
       <table>
         <thead>
           <tr>
@@ -49,13 +85,41 @@
     </div>
 
     <script>
+      var state = {
+        token: localStorage.getItem('pulse_session_token') || '',
+        user: null
+      };
+
       function setLog(text) {
         document.getElementById('log').textContent = text;
+      }
+
+      function setAuthView(loggedIn) {
+        document.getElementById('authCard').classList.toggle('hidden', loggedIn);
+        document.getElementById('appCard').classList.toggle('hidden', !loggedIn);
+        document.getElementById('tableCard').classList.toggle('hidden', !loggedIn);
+      }
+
+      function saveToken(token) {
+        state.token = token || '';
+        if (state.token) localStorage.setItem('pulse_session_token', state.token);
+        else localStorage.removeItem('pulse_session_token');
+      }
+
+      function renderUser() {
+        var u = state.user || {};
+        document.getElementById('who').textContent = u.name ? (u.name + ' (' + u.email + ')') : '-';
+        document.getElementById('roleTag').textContent = u.role || '-';
+      }
+
+      function canRun() {
+        return state.user && state.user.role === 'admin';
       }
 
       function renderRows(rows) {
         var html = rows.map(function (r) {
           var statusClass = r.last_status === 'SUCCESS' ? 'ok' : (r.last_status === 'FAILED' ? 'fail' : '');
+          var disabled = canRun() ? '' : 'disabled';
           return '<tr>' +
             '<td>' + r.report_id + '</td>' +
             '<td>' + r.report_name + '</td>' +
@@ -63,12 +127,67 @@
             '<td>' + r.last_timestamp + '</td>' +
             '<td class="' + statusClass + '">' + r.last_status + '</td>' +
             '<td>' +
-            '<button onclick="manualRun(\'' + r.report_id + '\')">Run Now</button> ' +
-            '<button class="secondary" onclick="queueRun(\'' + r.report_id + '\')">Queue</button>' +
+            '<button type="button" ' + disabled + ' onclick="manualRun(\'' + r.report_id + '\')">Run Now</button> ' +
+            '<button type="button" class="secondary" ' + disabled + ' onclick="queueRun(\'' + r.report_id + '\')">Queue</button>' +
             '</td>' +
             '</tr>';
         }).join('');
         document.getElementById('tbody').innerHTML = html;
+      }
+
+      function registerUser() {
+        var payload = {
+          name: document.getElementById('regName').value,
+          email: document.getElementById('regEmail').value,
+          password: document.getElementById('regPassword').value,
+          role: document.getElementById('regRole').value
+        };
+
+        setLog('Register akun...');
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLog('Register sukses: ' + JSON.stringify(res, null, 2));
+          })
+          .withFailureHandler(function (err) {
+            setLog('Register gagal: ' + err.message);
+          })
+          .uiRegister(payload);
+      }
+
+      function login() {
+        var payload = {
+          email: document.getElementById('loginEmail').value,
+          password: document.getElementById('loginPassword').value
+        };
+        setLog('Login...');
+
+        google.script.run
+          .withSuccessHandler(function (res) {
+            saveToken(res.token);
+            state.user = res.user;
+            setAuthView(true);
+            renderUser();
+            setLog('Login sukses sebagai ' + res.user.role);
+            refreshData();
+          })
+          .withFailureHandler(function (err) {
+            setLog('Login gagal: ' + err.message);
+          })
+          .uiLogin(payload);
+      }
+
+      function logout() {
+        google.script.run
+          .withSuccessHandler(function () {
+            saveToken('');
+            state.user = null;
+            setAuthView(false);
+            setLog('Logout berhasil.');
+          })
+          .withFailureHandler(function (err) {
+            setLog('Logout gagal: ' + err.message);
+          })
+          .uiLogout(state.token);
       }
 
       function refreshData() {
@@ -81,10 +200,11 @@
           .withFailureHandler(function (err) {
             setLog('Gagal refresh: ' + err.message);
           })
-          .uiGetReportRows();
+          .uiGetReportRows(state.token);
       }
 
       function manualRun(reportId) {
+        if (!canRun()) return setLog('Role user tidak punya akses run manual.');
         setLog('Menjalankan report ' + reportId + ' ...');
         google.script.run
           .withSuccessHandler(function (res) {
@@ -94,10 +214,11 @@
           .withFailureHandler(function (err) {
             setLog('Run gagal: ' + err.message);
           })
-          .uiRunReport(reportId);
+          .uiRunReport(reportId, state.token);
       }
 
       function queueRun(reportId) {
+        if (!canRun()) return setLog('Role user tidak punya akses queue.');
         setLog('Masuk queue: ' + reportId + ' ...');
         google.script.run
           .withSuccessHandler(function (res) {
@@ -106,10 +227,36 @@
           .withFailureHandler(function (err) {
             setLog('Queue gagal: ' + err.message);
           })
-          .uiQueueReport(reportId, 'dari dashboard');
+          .uiQueueReport(reportId, 'dari dashboard', state.token);
       }
 
-      refreshData();
+      function bootstrapSession() {
+        if (!state.token) {
+          setAuthView(false);
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function (res) {
+            if (!res || !res.ok || !res.user) {
+              saveToken('');
+              setAuthView(false);
+              return;
+            }
+
+            state.user = res.user;
+            setAuthView(true);
+            renderUser();
+            refreshData();
+          })
+          .withFailureHandler(function () {
+            saveToken('');
+            setAuthView(false);
+          })
+          .uiGetSession(state.token);
+      }
+
+      bootstrapSession();
     </script>
   </body>
 </html>
