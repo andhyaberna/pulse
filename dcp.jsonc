@@ -1,0 +1,34 @@
+{
+  // Repo-local context budget for meta_ads_internal_app.
+  // This is an approximation/proxy for workspace pressure, not a real model token meter.
+  "workspace": {
+    "name": "meta_ads_internal_app",
+    "root": "."
+  },
+  "contextBudget": {
+    "hotContextTarget": 0.5,
+    "hotContextWarning": 0.65,
+    "hotContextCritical": 0.8,
+    "maxTrackedSignals": 10
+  },
+  "watchdog": {
+    "signals": [
+      "git status --short --branch",
+      "git diff --stat",
+      "git status --ignored --short"
+    ],
+    "safeCleanupPaths": [
+      "apps_script/node_modules",
+      "cloudflare_worker/node_modules",
+      "cloudflare_worker/.wrangler"
+    ],
+    "reviewOnlyPaths": [
+      "apps_script/.clasp.json"
+    ]
+  },
+  "notes": [
+    "Keep the active write scope narrow.",
+    "Prefer archiving or ignoring generated artifacts over rewriting source files.",
+    "Use scripts/context-watchdog.ps1 for read-only summaries by default."
+  ]
+}
