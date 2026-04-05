@@ -1,0 +1,8 @@
+report_id,report_name,is_active,schedule_type,sort_order,notes
+META_FULL_METRICS,Meta Ads Intelligence Report,1,DAILY,1,Campaign level full metrics
+META_ADSET_BREAKDOWN,Meta Ads Adset Breakdown,1,DAILY,2,Adset level snapshot
+META_ADSET_PERFORMANCE,Meta Ads Adset Performance,1,DAILY,3,Funnel conversion alert
+META_TOP_ADS_PROFIT,Top Ads Performance,1,DAILY,4,Top ads based on profit
+META_TOP_ADS_WINNER,Top Ads Winner Alert,1,DAILY,5,Winner detector for scaling
+META_FUNNEL_ALERT,Funnel Alert CPM CTR,1,HOURLY,6,Funnel and quality issue detector
+META_CREATIVE_FATIGUE,Cek Creative Fatigue,1,DAILY,7,Creative fatigue detector

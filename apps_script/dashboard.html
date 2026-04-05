@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meta Ads Report Runner</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 16px; background: #f6f8fb; color: #1f2937; }
+      .card { background: #fff; border: 1px solid #dbe3ef; border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+      h2 { margin: 0 0 12px 0; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border-bottom: 1px solid #ebeff5; padding: 8px; text-align: left; font-size: 13px; }
+      th { background: #f0f4fa; }
+      button { border: 1px solid #2b6cb0; background: #2b6cb0; color: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+      button.secondary { background: #fff; color: #2b6cb0; }
+      .muted { color: #6b7280; font-size: 12px; }
+      .ok { color: #0f766e; }
+      .fail { color: #b91c1c; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Meta Ads Internal Runner</h2>
+      <div class="muted">Version: 1.0.0</div>
+      <div style="margin-top: 10px;">
+        <button type="button" onclick="refreshData()">Refresh</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Report ID</th>
+            <th>Report Name</th>
+            <th>Active</th>
+            <th>Last Run</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <b>Log</b>
+      <pre id="log">Siap.</pre>
+    </div>
+
+    <script>
+      function setLog(text) {
+        document.getElementById('log').textContent = text;
+      }
+
+      function renderRows(rows) {
+        var html = rows.map(function (r) {
+          var statusClass = r.last_status === 'SUCCESS' ? 'ok' : (r.last_status === 'FAILED' ? 'fail' : '');
+          return '<tr>' +
+            '<td>' + r.report_id + '</td>' +
+            '<td>' + r.report_name + '</td>' +
+            '<td>' + (r.is_active ? 'YES' : 'NO') + '</td>' +
+            '<td>' + r.last_timestamp + '</td>' +
+            '<td class="' + statusClass + '">' + r.last_status + '</td>' +
+            '<td>' +
+            '<button onclick="manualRun(\'' + r.report_id + '\')">Run Now</button> ' +
+            '<button class="secondary" onclick="queueRun(\'' + r.report_id + '\')">Queue</button>' +
+            '</td>' +
+            '</tr>';
+        }).join('');
+        document.getElementById('tbody').innerHTML = html;
+      }
+
+      function refreshData() {
+        setLog('Memuat data...');
+        google.script.run
+          .withSuccessHandler(function (rows) {
+            renderRows(rows || []);
+            setLog('Data berhasil dimuat.');
+          })
+          .withFailureHandler(function (err) {
+            setLog('Gagal refresh: ' + err.message);
+          })
+          .uiGetReportRows();
+      }
+
+      function manualRun(reportId) {
+        setLog('Menjalankan report ' + reportId + ' ...');
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLog('Selesai: ' + JSON.stringify(res, null, 2));
+            refreshData();
+          })
+          .withFailureHandler(function (err) {
+            setLog('Run gagal: ' + err.message);
+          })
+          .uiRunReport(reportId);
+      }
+
+      function queueRun(reportId) {
+        setLog('Masuk queue: ' + reportId + ' ...');
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLog('Queue sukses: ' + JSON.stringify(res, null, 2));
+          })
+          .withFailureHandler(function (err) {
+            setLog('Queue gagal: ' + err.message);
+          })
+          .uiQueueReport(reportId, 'dari dashboard');
+      }
+
+      refreshData();
+    </script>
+  </body>
+</html>

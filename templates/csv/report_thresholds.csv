@@ -1,0 +1,18 @@
+report_id,threshold_key,threshold_value,is_active,notes
+META_FULL_METRICS,MIN_SPEND,10000,1,Minimum spend to show campaign
+META_ADSET_BREAKDOWN,MIN_SPEND,10000,1,Minimum spend to show adset
+META_ADSET_PERFORMANCE,MIN_SPEND,10000,1,Minimum spend to evaluate funnel
+META_ADSET_PERFORMANCE,CPR_HIGH,70000,1,High CPR threshold
+META_TOP_ADS_PROFIT,MIN_SPEND,10000,1,Minimum spend for top ads
+META_TOP_ADS_PROFIT,TOP_LIMIT,10,1,Max rows in ranking
+META_TOP_ADS_WINNER,WINNER_MIN_SPEND,30000,1,Minimum spend for winner
+META_TOP_ADS_WINNER,WINNER_MIN_ROAS,2,1,Minimum ROAS for winner
+META_TOP_ADS_WINNER,WINNER_MIN_BUY,2,1,Minimum purchase for winner
+META_TOP_ADS_WINNER,TOP_LIMIT,10,1,Max winner rows
+META_FUNNEL_ALERT,MIN_SPEND,10000,1,Minimum spend for alert check
+META_FUNNEL_ALERT,CPM_SPIKE,100000,1,CPM spike threshold
+META_FUNNEL_ALERT,CTR_LOW,1,1,Low CTR threshold
+META_CREATIVE_FATIGUE,FATIGUE_MIN_SPEND,30000,1,Minimum spend for fatigue check
+META_CREATIVE_FATIGUE,FATIGUE_CTR_MAX,0.8,1,Max CTR before fatigue
+META_CREATIVE_FATIGUE,FATIGUE_CPM_MIN,50000,1,Min CPM before fatigue
+META_CREATIVE_FATIGUE,SCALE_ROAS_MIN,1.5,1,ROAS minimum for scale suggestion
